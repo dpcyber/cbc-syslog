@@ -8,7 +8,7 @@ import io
 
 
 install_requires = [
-    'Jinja2==2.11.3',
+    'Jinja2==2.11.2',
     'requests==2.24.0',
     'psutil==5.7.3',
     ]
@@ -21,10 +21,13 @@ packages = [
 with io.open('README.md', 'rt', encoding='utf8') as f:
     long_description = f.read()
 
-scripts = ['src/cbc_syslog/root/usr/share/cb/integrations/cbc-syslog/cacert.pem',
-           'src/cbc_syslog/root/etc/cron.d/cbc-syslog',
-           'src/cbc_syslog/root/etc/cb/integrations/cbc-syslog/cbc-syslog.conf.example'
-           ]
+data_files = [
+    ('cbc_syslog_conf_examples',
+     ['src/cbc_syslog/root/usr/share/cb/integrations/cbc-syslog/cacert.pem',
+      'src/cbc_syslog/root/etc/cron.d/cbc-syslog',
+      'src/cbc_syslog/root/etc/cb/integrations/cbc-syslog/cbc-syslog.conf.example']
+     )
+]
 
 setup(
     name='cbc_syslog',
@@ -53,4 +56,7 @@ setup(
         'Programming Language :: Python :: 3',
         ],
     keywords='carbonblack',
-    scripts=scripts)
+    data_files=data_files,
+    entry_points={
+        'console_scripts': ['cbc-syslog-cli=cbc_syslog.cbc_syslog:run_main'],
+    })

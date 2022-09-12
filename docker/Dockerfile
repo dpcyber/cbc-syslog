@@ -4,7 +4,6 @@ FROM centos:7 AS build
 # set up an environment wih pip (required to get pyinstaller), and make directories used later
 RUN yum update -y \
   && yum install -y gcc python-devel \
-  && yum install -y git \
   && yum install -y epel-release \
   && yum install -y python-pip rpm-build \
   && pip install --upgrade "pip<21.0.0" \
