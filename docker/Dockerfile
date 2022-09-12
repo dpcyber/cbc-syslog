@@ -18,7 +18,7 @@ RUN yum update -y \
 WORKDIR /root/cbc-syslog
 
 # copy source into the build image
-RUN git clone https://github.com/dpcyber/cbc-syslog.git .
+COPY . .
 
 # set up environment, build binary (via rpm-build), extract it
 RUN pip install --upgrade pip setuptools \
