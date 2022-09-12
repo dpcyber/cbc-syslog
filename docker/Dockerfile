@@ -4,9 +4,10 @@ FROM centos:7 AS build
 # set up an environment wih pip (required to get pyinstaller), and make directories used later
 RUN yum update -y \
   && yum install -y gcc python-devel \
+  && yum install -y git \
   && yum install -y epel-release \
   && yum install -y python-pip rpm-build \
-  && pip install --upgrade pip \
+  && pip install --upgrade "pip<21.0.0" \
   && pip install pyinstaller==3.5 \
   && mkdir -p \
     /root/build-root \
@@ -17,7 +18,7 @@ RUN yum update -y \
 WORKDIR /root/cbc-syslog
 
 # copy source into the build image
-COPY . .
+RUN git clone https://github.com/dpcyber/cbc-syslog.git .
 
 # set up environment, build binary (via rpm-build), extract it
 RUN pip install --upgrade pip setuptools \
