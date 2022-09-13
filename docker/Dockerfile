@@ -1,40 +1,27 @@
-# use centos as build imagea, for rpm-build support
-FROM centos:7 AS build
+FROM ubuntu:jammy
 
-# set up an environment wih pip (required to get pyinstaller), and make directories used later
-RUN yum update -y \
-  && yum install -y gcc python-devel \
-  && yum install -y epel-release \
-  && yum install -y python-pip rpm-build \
-  && pip install --upgrade "pip<21.0.0" \
-  && pip install pyinstaller==3.5 \
-  && mkdir -p \
-    /root/build-root \
-    /root/cbc-syslog \
-    /root/rpmbuild/SOURCES
+# update and download the necessary packages
+RUN apt-get update 
+RUN apt-get install -y git python2.7 python3-pip virtualenv python3.10-venv
+RUN git clone https://github.com/dpcyber/cbc-syslog
+WORKDIR /cbc-syslog
 
-# rest of our build-commands will happen here
-WORKDIR /root/cbc-syslog
+# setup python virtual environment
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# copy source into the build image
-COPY . .
+# install cbc-syslog
+RUN pip install -r requirements.txt
+RUN pip install cbc-syslog
 
-# set up environment, build binary (via rpm-build), extract it
-RUN pip install --upgrade pip setuptools \
-  && pip install -r requirements.txt \
-  && python setup.py -v bdist_rpm \
-  && cd /root/build-root \
-  && rpm2cpio /root/cbc-syslog/dist/cbc_syslog-*.noarch.rpm | cpio -id
+# switch to the installed directory
+WORKDIR /opt/venv/lib/python3.10/site-packages/cbc_syslog
 
-# set up a python runtime environment for final image
-FROM python:2.7-slim AS base
+# setup some folders and log file
+RUN mkdir logs \
+    && mkdir config \
+    && touch logs/cbc_syslog_logs.txt
 
-# rpm installs this but it's empty so have to manually make it
-RUN mkdir -p /usr/share/cb/integrations/cbc-syslog/store
-
-COPY docker/docker-entrypoint.sh /
-
-COPY --from=build /root/build-root /
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["/usr/share/cb/integrations/cbc-syslog/cbc-syslog", "--config-file", "/etc/cb/integrations/cbc-syslog/cbc-syslog.conf", "--log-file", "/dev/stdout"]
+# run the python command
+CMD python3 cbc_syslog.py -l logs/cbc_syslog_logs.txt -c config/cb-defense-syslog.conf
