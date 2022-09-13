@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  cbc-syslog:
+    image: cabneydp/cbc-syslog
+    container_name: cbc-syslog
+    volumes:
+      - '~/docker-compose/cbc-syslog:/opt/venv/lib/python3.10/site-packages/cbc_syslog/config'
